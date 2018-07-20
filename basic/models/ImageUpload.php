@@ -27,15 +27,45 @@ class ImageUpload extends Model{
     {
 //        die($currentImage);
         $this->image = $file;
-        if(file_exists(Yii::getAlias('@web').'uploads/'.$currentImage))
-        {
-            unlink(Yii::getAlias('@web').'uploads/'.$currentImage);
-        }
 
-        $filename = strtolower(md5(uniqid($file->baseName)) ).'.'. $file->extension;
-        $file->saveAs(Yii::getAlias('@web').'uploads/'.$filename);
-        return $filename;
+        if ($this->validate()) {
+
+            $this->deleteCurrentImage($currentImage);
+            return $this->saveImage();
+        }
     }
 
 
+    public function getFolder()
+    {
+        return Yii::getAlias('@web') . 'uploads/';
+    }
+
+    private function generateFilename()
+    {
+        return  strtolower(md5(uniqid($this->image->baseName))) . '.' . $this->image->extension;
+    }
+
+
+    public function deleteCurrentImage($currentImage)
+    {
+        if($this->fileExists($currentImage))
+        {
+            unlink($this->getFolder() . $currentImage);
+        }
+    }
+    public function fileExists($currentImage)
+    {
+        if(!empty($currentImage) && $currentImage != null)
+        {
+            return file_exists($this->getFolder() . $currentImage);
+        }
+    }
+
+    public function saveImage()
+    {
+        $filename = $this->generateFilename();
+        $this->image->saveAs($this->getFolder() . $filename);
+        return $filename;
+    }
 }

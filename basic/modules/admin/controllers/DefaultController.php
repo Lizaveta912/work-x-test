@@ -15,6 +15,7 @@ class DefaultController extends Controller
      */
     public function actionIndex()
     {
+        \Yii::$app->session->addFlash('info', 'Test info message');
         return $this->render('index');
     }
 }

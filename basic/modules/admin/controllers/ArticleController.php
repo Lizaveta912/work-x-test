@@ -2,10 +2,12 @@
 
 namespace app\modules\admin\controllers;
 
+use app\models\Category;
 use app\models\ImageUpload;
 use Yii;
 use app\models\Article;
 use app\models\ArticleSearch;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -135,15 +137,39 @@ class ArticleController extends Controller
 
         if(Yii::$app->request->isPost){
 
-            $article =$this->findModel($id);
+            $article = $this->findModel($id);
 
             $file = UploadedFile::getInstance($model, 'image');
 //            var_dump(strtolower(md5(uniqid($file->baseName)) ).'.'. $file->extension);
 //            die;
 
-            $article->saveImage($model->uploadFile($file, $article->image));
+            if($article->saveImage($model->uploadFile($file, $article->image))){
+                return $this->redirect(['view','id'=>$article->id]);
+            };
         }
         return $this->render('image', ['model'=>$model]);
 
     }
+
+    public function actionSetCategory($id)
+    {
+//        $category = Category::findOne(1);
+//        var_dump($category->getArticles());die();
+
+        $article = $this->findModel($id);
+        $categories = ArrayHelper::map(Category::find()->all(), 'id','title');
+
+        if ($article->load(Yii::$app->request->post())){
+            $article->save();
+            return $this->redirect(['view','id'=>$article->id]);
+        }
+        return $this->render('category',[
+            'article'=>$article,
+            //'selectedCategory'=>$selectedCategory,
+            'categories'=>$categories,
+        ]);
+
+    }
+
+
 }
